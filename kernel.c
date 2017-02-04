@@ -89,11 +89,17 @@ void terminal_setcolor(uint8_t color) {
 
 void terminal_putchar(char c){
 	const size_t index = terminal_row * VGA_WIDTH + terminal_column;
-	terminal_buffer[index] = vga_entry(c, terminal_color);
-	if(++terminal_column == VGA_WIDTH){
+	if(c=='\n'){
+		terminal_row++;
 		terminal_column = 0;
-		if(++terminal_row == VGA_HEIGHT)
-			terminal_row = 0;
+	}
+	else{
+		terminal_buffer[index] = vga_entry(c, terminal_color);
+		if(++terminal_column == VGA_WIDTH){
+			terminal_column = 0;
+			if(++terminal_row == VGA_HEIGHT)
+				terminal_row = 0;
+		}
 	}
 }
 
@@ -105,7 +111,7 @@ void terminal_write(const char* data){
 
 void kernel_main(void){
 	terminal_initialize();
-	terminal_write("Hello, kernel world!\n");
+	terminal_write("Hello, kernel world!\n\n\nGoodbye, cruel kernel world!\n");
 }
 
 /* Compile using "i686-elf-gcc -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra" */
