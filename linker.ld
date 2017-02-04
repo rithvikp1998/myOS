@@ -5,7 +5,8 @@
 
 ENTRY(_start)
 
-/* Tell where the various sections of the object files will be put in the final kernel image. */
+/* Tell where the various sections of the object files will be put in the final 
+   kernel image. */
 
 SECTIONS
 {
@@ -48,3 +49,5 @@ SECTIONS
 	/* The compiler may produce other sections, by default it will put them in
 	   a segment with the same name. Simply add stuff here as needed. */
 }
+
+/* Compile with "i686-elf-gcc -T linker.ld -o myos.bin -ffreestanding -O2 -nostdlib boot.o kernel.o -lgcc" */
