@@ -177,6 +177,18 @@ void terminal_putchar(char c){
 	}
 }
 
+void terminal_backspace(void){
+	if(terminal_column==0){
+		terminal_row--;
+		terminal_column=VGA_WIDTH;
+	}
+	else{
+		terminal_column--;
+	}
+	size_t index = terminal_row * VGA_WIDTH + terminal_column;
+	terminal_buffer[index] = vga_entry(' ', terminal_color);
+}
+
 void terminal_write(const char* data){
 	size_t size = strlen(data);
 	for(size_t i = 0; i < size; i++)
@@ -201,6 +213,9 @@ void keyboard_handler_main(void){
 		keycode = read_port(KEYBOARD_DATA_PORT);
 		if(keycode < 0)
 			return;
+		else if(keycode==14){
+			terminal_backspace();
+		}
 		else{
 			terminal_putchar(keyboard_map[(uint8_t) keycode]);
 		}
