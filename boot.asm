@@ -13,6 +13,7 @@ CHECKSUM 	equ		-(MAGIC + FLAGS)		; checksum of above, to prove we are multiboot
 
 
 section .multiboot
+
 align 4										; enforces alignment of the data immediately on a memory address that is a multiple of 4
 		dd MAGIC
 		dd FLAGS
@@ -20,6 +21,7 @@ align 4										; enforces alignment of the data immediately on a memory addres
 
 
 section .bss
+
 align 4
 stack_bottom:
 resb 16384									; declaring 16 KiB uninitialised storage space
@@ -30,21 +32,45 @@ stack_top:
 
 
 section .text
+
+global keyboard_handler
+global read_port
+global write_port
+global load_idt
 global _start:function (_start.end - _start); declaring _start as a function symbol with the given symbol size
+
+keyboard_handler:
+		extern keyboard_handler_main		; 'extern' specifies symbols that the current source file uses but which are defined in other object modules
+		call keyboard_handler_main
+		iretd
+
+read_port:
+		mov edx, [esp+4]
+		in al, dx
+		ret
+
+write_port:
+		mov edx, [esp+4]
+		mov al, [esp+8]
+		out dx, al
+		ret
+
+load_idt:
+		mov edx, [esp+4]
+		lidt [edx]
+		sti
+		ret
+
 _start:										; bootloder loaded us into 32-bit protected mode
 		mov esp, stack_top					; stack on x86 grows downwards
-		extern kernel_main					; 'extern' specifies symbols that the current source file uses but which are defined in other object modules
+		extern kernel_main					
 		call kernel_main
-
-
-; Put the computer into an infinite loop
-
-
 		cli 								; disables interrupts
-
 
 .hang:	
 		hlt									; wait for the next interrupt to arrive. Since they are disabled, this will lock up the computer
 		jmp 	.hang						; Jump to hlt instruction if it ever wakes up
 
-.end:										; compile using "nasm -felf32 boot.asm -o boot.o"
+.end:
+
+; compile using "nasm -felf32 boot.asm -o boot.o"
