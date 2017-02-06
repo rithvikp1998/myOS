@@ -16,12 +16,12 @@
 #endif
 
 extern void keyboard_handler(void);
-extern char read_port(uint16_t port);
 extern void write_port(uint16_t port, uint8_t data);
 extern void load_idt(uint32_t *idt_ptr);
 extern void terminal_initialize(void);
-extern void terminal_write(const char* data);
+extern void terminal_write(char* data);
 extern void keyboard_init(void);
+
 /* Interrupt Descriptor Table */
 
 struct IDT_entry{
