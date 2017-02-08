@@ -33,11 +33,27 @@ stack_top:
 
 section .text
 
+global gdt_flush
 global keyboard_handler
 global read_port
 global write_port
 global load_idt
 global _start:function (_start.end - _start); declaring _start as a function symbol with the given symbol size
+
+gdt_flush:
+		cli
+		extern gdt_ptr
+		lgdt [gdt_ptr]
+		jmp 0x08:complete_flush
+
+complete_flush:
+		mov ax, 0x10
+		mov ds, ax
+    	mov es, ax
+    	mov fs, ax
+    	mov gs, ax
+    	mov ss, ax
+    	ret
 
 keyboard_handler:
 		extern keyboard_handler_main		; 'extern' specifies symbols that the current source file uses but which are defined in other object modules
