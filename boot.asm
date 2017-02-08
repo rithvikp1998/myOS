@@ -34,6 +34,8 @@ stack_top:
 section .text
 
 global gdt_flush
+global load_page_directory
+global enable_paging
 global keyboard_handler
 global read_port
 global write_port
@@ -54,6 +56,24 @@ complete_flush:
     	mov gs, ax
     	mov ss, ax
     	ret
+
+load_page_directory:
+		push ebp
+		mov ebp, esp
+		mov eax, [ebp+8]
+		mov cr3, eax
+		pop ebp
+		ret
+
+enable_paging:
+		push ebp
+		mov ebp, esp
+		mov eax, cr0
+		or eax, 0x80000000
+		mov cr0, eax
+		mov esp, ebp
+		pop ebp
+		ret
 
 keyboard_handler:
 		extern keyboard_handler_main		; 'extern' specifies symbols that the current source file uses but which are defined in other object modules
