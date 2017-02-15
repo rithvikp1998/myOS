@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "multiboot.h"
 
 #define KERNEL_OFFSET 0x08
 #define INTERRUPT_GATE 0x8e
@@ -24,6 +25,7 @@ extern void load_idt(uint32_t *idt_ptr);
 extern void terminal_initialize(void);
 extern void terminal_write(char* data);
 extern void keyboard_init(void);
+extern void set_mbinfo_addr(void);
 
 /* Global Descriptor Table - We want to use paging in place of segmentation
    but we can't disable segmentation, so we disable its effect by creating 
@@ -179,8 +181,30 @@ void fill_first_page_table(void){
 	page_directory[0] = ((uint32_t)first_page_table) | 3;
 }
 
+multiboot_info_t* mbinfo_addr;
+
+typedef struct mbmmap{
+	uint32_t size;
+	uint64_t base_addr_low;
+	uint64_t base_addr_high;
+	uint64_t length_low;
+	uint64_t length_high;
+	uint32_t type;
+} mbmmap_t;
+
+/*  Get the pointer to the first instance, grab whatever address and 
+	length information you want, and finally skip to the next memory 
+	map instance by adding size+sizeof(mmap->size) to the pointer */
+
+void get_mbmmap(void){
+	set_mbinfo_addr();
+	mbmmap_t* mmap = (mbmmap_t*)(mbinfo_addr -> mmap_addr);
+	while((uint32_t)mmap < mbinfo_addr->mmap_addr + mbinfo_addr->mmap_length)
+		mmap = (mbmmap_t*)((uint32_t)mmap + mmap->size + sizeof(mmap->size));
+}
+
 void kernel_main(void){
-	terminal_initialize();
+	get_mbmmap();
 	load_gdt();
 	fill_page_directory();
 	fill_first_page_table();
@@ -188,6 +212,7 @@ void kernel_main(void){
 	enable_paging();
 	idt_init();
 	keyboard_init();
+	terminal_initialize();
 	terminal_write("Hello, kernel world!\n\n\n");
 	while(1);
 }

@@ -40,6 +40,7 @@ global keyboard_handler
 global read_port
 global write_port
 global load_idt
+global set_mbinfo_addr
 global _start:function (_start.end - _start); declaring _start as a function symbol with the given symbol size
 
 gdt_flush:
@@ -95,6 +96,11 @@ load_idt:
 		mov edx, [esp+4]
 		lidt [edx]
 		sti
+		ret
+
+set_mbinfo_addr:
+		extern mbinfo_addr
+		mov [mbinfo_addr], ebx				; Multiboot bootloader stores address to multiboot_info struct in ebx
 		ret
 
 _start:										; bootloder loaded us into 32-bit protected mode
