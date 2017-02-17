@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 /* Hardware color constants */
 
 /* A variable that has been declared as having an enumerated type can be 
