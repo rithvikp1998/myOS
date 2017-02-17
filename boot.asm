@@ -8,30 +8,26 @@ FLAGS 		equ		MBALIGN | MEMINFO 		; bitwise or'd
 MAGIC   	equ 	0x1BADB002				; 'Magic number' lets bootloader find this file, it is like a file identifier
 CHECKSUM 	equ		-(MAGIC + FLAGS)		; checksum of above, to prove we are multiboot
 
+KERNEL_VIRTUAL_BASE equ 0xC0000000                  ; 3GB
+KERNEL_PAGE_NUMBER equ (KERNEL_VIRTUAL_BASE >> 22)  ; Page directory index of kernel's 4MB PTE.
 
 ; Declare a multiboot header that marks the program as a kernel. These are magic values that are documented in the multiboot standard. The bootloader will search for this signature in the first 8 KiB of the kernel file, aligned at a 32-bit boundary. The signature is in its own section so the header can be forced to be within the first 8 KiB of the kernel file.
 
+section .data
 
-section .multiboot
-
-align 4										; enforces alignment of the data immediately on a memory address that is a multiple of 4
-		dd MAGIC
-		dd FLAGS
-		dd CHECKSUM
-
-
-section .bss
-
-align 4
-stack_bottom:
-resb 16384									; declaring 16 KiB uninitialised storage space
-stack_top:
-
+align 0x1000
+boot_page_dir:
+		dd 0x00000083
+		times (KERNEL_PAGE_NUMBER-1) dd 0
+		dd 0x00000083
+		times (1024-KERNEL_PAGE_NUMBER-1) dd 0
 
 ; linker script specifies _start as the entry point to the kernel and the bootloader jumps to this position once the kernel has been loaded
 
 
 section .text
+
+align 4
 
 global gdt_flush
 global load_page_directory
@@ -41,7 +37,14 @@ global read_port
 global write_port
 global load_idt
 global set_mbinfo_addr
-global _start:function (_start.end - _start); declaring _start as a function symbol with the given symbol size
+global start
+
+extern kernel_main
+
+MultiBootHeader:
+    	dd MAGIC
+    	dd FLAGS
+    	dd CHECKSUM
 
 gdt_flush:
 		cli
@@ -59,22 +62,26 @@ complete_flush:
     	ret
 
 load_page_directory:
-		push ebp
-		mov ebp, esp
-		mov eax, [ebp+8]
-		mov cr3, eax
-		pop ebp
+		mov ecx, (boot_page_dir - KERNEL_VIRTUAL_BASE)
+    	mov cr3, ecx
 		ret
 
+allow_4m_pages:
+		mov ecx, cr4
+    	or ecx, 0x00000010                          ; Set PSE bit in CR4 to enable 4MB pages.
+    	mov cr4, ecx
+    	ret
+
 enable_paging:
-		push ebp
-		mov ebp, esp
-		mov eax, cr0
-		or eax, 0x80000000
-		mov cr0, eax
-		mov esp, ebp
-		pop ebp
+		mov ecx, cr0
+    	or ecx, 0x80000000                          ; Set PG bit in CR0 to enable paging.
+    	mov cr0, ecx
 		ret
+
+unmap_identity_paging:
+		mov dword [boot_page_dir], 0
+    	invlpg [0]
+    	ret
 
 keyboard_handler:
 		extern keyboard_handler_main		; 'extern' specifies symbols that the current source file uses but which are defined in other object modules
@@ -100,19 +107,36 @@ load_idt:
 
 set_mbinfo_addr:
 		extern mbinfo_addr
-		mov [mbinfo_addr], ebx				; Multiboot bootloader stores address to multiboot_info struct in ebx
+    	add ebx, KERNEL_VIRTUAL_BASE
+    	mov [mbinfo_addr], ebx				; Multiboot bootloader stores address to multiboot_info struct in ebx
 		ret
 
-_start:										; bootloder loaded us into 32-bit protected mode
-		mov esp, stack_top					; stack on x86 grows downwards
-		extern kernel_main					
+;Until paging is set up, the code must be position-independent and use physical addresses, not virtual ones!
+ 
+; Start fetching instructions in kernel space. Since eip at this point holds the physical address of this command (approximately 0x00100000) we need to do a long jump to the correct virtual address of StartInHigherHalf which is approximately 0xC0100000.
+
+start equ (_start - 0xC0000000)
+
+_start:									; bootloder loaded us into 32-bit protected mode
+		call load_page_directory
+		call allow_4m_pages
+		call enable_paging
+		lea ecx, [start_in_hh]
+		jmp ecx
+
+start_in_hh:
+		mov dword [boot_page_dir], 0
+    	invlpg [0]
+		mov esp, stack+16384
+		call set_mbinfo_addr		
 		call kernel_main
-		cli 								; disables interrupts
+		hlt 							;disables interrupts
 
-.hang:	
-		hlt									; wait for the next interrupt to arrive. Since they are disabled, this will lock up the computer
-		jmp 	.hang						; Jump to hlt instruction if it ever wakes up
+section .bss
 
-.end:
+align 32
+
+stack:
+	resb 16384			; declaring 16 KiB uninitialised storage space
 
 ; compile using "nasm -felf32 boot.asm -o boot.o"
