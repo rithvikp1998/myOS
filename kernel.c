@@ -18,6 +18,7 @@
 #endif
 
 void kernel_main(void){
+	get_mbmmap();
 	load_gdt();
 	idt_init();
 	keyboard_init();
