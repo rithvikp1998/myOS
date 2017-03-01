@@ -9,3 +9,22 @@ size_t strlen(const char* str){
 		len++;
 	return len;
 }
+
+/* World's most inefficient print function for integers, 
+   I need to replace this soon */
+
+void printx(uint64_t data){
+	char hex_array[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+							 'A', 'B', 'C', 'D', 'E', 'F'};
+	char data_str[16];
+	uint8_t pos=0;
+	while(data>0){
+		data_str[15-pos] = (hex_array[data%16]);
+		data=data/16;
+		pos++;
+	}
+	while(pos>0){
+		terminal_putchar(data_str[16-pos]);
+		pos--;
+	}
+}

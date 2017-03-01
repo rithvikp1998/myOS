@@ -1,8 +1,8 @@
 #include "vga.h"
-#include "mylibc.h"
 
 extern uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg);
 extern uint16_t vga_entry(unsigned char uc, uint8_t color);
+extern size_t strlen(const char* data);
 
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
