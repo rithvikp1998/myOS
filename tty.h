@@ -2,6 +2,7 @@
 #define TTY_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include "vga.h"
 
 static const size_t VGA_WIDTH = 80;
