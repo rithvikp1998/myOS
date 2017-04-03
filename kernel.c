@@ -19,12 +19,12 @@
 #endif
 
 void kernel_main(void){
+	terminal_initialize();							/* terminal_initialize function is put at top to */
+	terminal_write("Hello, kernel world!\n\n\n");  	/* enable using print statements in other functions */
 	get_mbmmap();
 	load_gdt();
 	idt_init();
 	keyboard_init();
-	terminal_initialize();
-	terminal_write("Hello, kernel world!\n\n\n");
 	while(1);
 }
 
