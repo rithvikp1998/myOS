@@ -14,4 +14,4 @@ boot.o: boot.asm
 	${CC} ${CFLAGS} $< -o $@
 
 clean:
-	rm -f *.o *.bin
+	rm -f *.o *.bin *.iso
