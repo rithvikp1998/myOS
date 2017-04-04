@@ -19,17 +19,21 @@ size_t strlen(const char* str){
    I need to replace this soon */
 
 void printx(uint64_t data){
-	char hex_array[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	if(data==0)
+		terminal_putchar('0');
+	else{
+		char hex_array[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 							 'A', 'B', 'C', 'D', 'E', 'F'};
-	char data_str[16];
-	uint8_t pos=0;
-	while(data>0){
-		data_str[15-pos] = (hex_array[data%16]);
-		data=data/16;
-		pos++;
-	}
-	while(pos>0){
-		terminal_putchar(data_str[16-pos]);
-		pos--;
+		char data_str[16];
+		uint8_t pos=0;
+		while(data>0){
+			data_str[15-pos] = (hex_array[data%16]);
+			data=data/16;
+			pos++;
+		}
+		while(pos>0){
+			terminal_putchar(data_str[16-pos]);
+			pos--;
+		}
 	}
 }
