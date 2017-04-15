@@ -1,4 +1,4 @@
-OBJS = boot.o gdt.o idt.o kernel.o keyboard.o mylibc.o paging.o pmm.o tty.o
+OBJS = boot.o gdt.o idt.o kernel.o keyboard.o mylibc.o vmm.o pmm.o tty.o
 CFLAGS = -c -std=gnu99 -ffreestanding -Wall -Wextra 
 CC = cross_compiler/bin/i686-elf-gcc
 INCLUDES = 
