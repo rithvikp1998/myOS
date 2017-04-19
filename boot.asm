@@ -33,6 +33,7 @@ section .text
 	global write_port
 	global keyboard_handler
 	global set_mbinfo_addr
+	global set_pdir_addr
 	global start
 
 	extern kernel_main
@@ -107,6 +108,12 @@ section .text
 	    	mov [mbinfo_addr], ebx				; Multiboot bootloader stores address to multiboot_info struct in ebx
 			ret
 
+	set_pdir_addr:
+			extern pdir
+			mov eax, boot_page_dir
+			mov [pdir], eax
+			ret
+
 	;Until paging is set up, the code must be position-independent and use physical addresses, not virtual ones!
 
 	start equ (_start - 0xC0000000)
@@ -125,6 +132,7 @@ section .text
 	    	invlpg [0]
 			mov esp, stack+16384
 			call set_mbinfo_addr		
+			call set_pdir_addr
 			call kernel_main
 			hlt 							;disables interrupts
 

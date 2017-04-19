@@ -10,4 +10,6 @@ uint32_t first_page_table[1024]__attribute__((aligned(4096)));
 void fill_page_directory(void);
 void fill_first_page_table(void);
 
+uint32_t* pdir;
+
 #endif
