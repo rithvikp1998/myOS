@@ -15,7 +15,7 @@ size_t strlen(const char* str){
 	return len;
 }
 
-/* World's most inefficient print function for integers, 
+/* World's most inefficient print functions for integers, 
    I need to replace this soon */
 
 void printx(uint64_t data){
@@ -33,6 +33,44 @@ void printx(uint64_t data){
 		}
 		while(pos>0){
 			terminal_putchar(data_str[16-pos]);
+			pos--;
+		}
+	}
+}
+
+void printd(uint64_t data){
+	if(data==0)
+		terminal_putchar('0');
+	else{
+		char hex_array[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+		char data_str[20];
+		uint8_t pos=0;
+		while(data>0){
+			data_str[19-pos] = (hex_array[data%10]);
+			data=data/10;
+			pos++;
+		}
+		while(pos>0){
+			terminal_putchar(data_str[20-pos]);
+			pos--;
+		}
+	}
+}
+
+void printb(uint64_t data){
+	if(data==0)
+		terminal_putchar('0');
+	else{
+		char hex_array[2] = {'0', '1'};
+		char data_str[64];
+		uint8_t pos=0;
+		while(data>0){
+			data_str[63-pos] = (hex_array[data%2]);
+			data=data/2;
+			pos++;
+		}
+		while(pos>0){
+			terminal_putchar(data_str[64-pos]);
 			pos--;
 		}
 	}
