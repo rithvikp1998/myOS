@@ -27,12 +27,12 @@ void get_mbmmap(void){
 
 	memory_map_t* mmap = (memory_map_t*)(mbinfo_addr -> mmap_addr + 0xC0000000);
 	for(uint32_t i=mmap->base_addr_low; i<mmap->base_addr_low+mmap->length_low; i+=4096)
-		if(mmap->type==1 && i>640*1024)
+		if(mmap->type==1 && i>4*1024*1024)
 			mem_bitmap[i/(4096*64)] &= ~(1 << ((i/4096) % 64));
 	while((uint32_t)mmap < mbinfo_addr->mmap_addr + 0xC0000000 + mbinfo_addr->mmap_length){
 		mmap = (memory_map_t*)((uint32_t)mmap + mmap->size + sizeof(mmap->size));
 		for(uint32_t i=mmap->base_addr_low; i<mmap->base_addr_low+mmap->length_low; i+=4096)
-			if(mmap->type==1 && i>640*1024)
+			if(mmap->type==1 && i>4*1024*1024)
 				mem_bitmap[i/(4096*64)] &= ~(1 << ((i/4096) % 64));
 	}
 }
