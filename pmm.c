@@ -37,7 +37,7 @@ void get_mbmmap(void){
 	}
 }
 
-uint32_t get_free_block(void){
+uint32_t pmm_alloc_block(void){
 	for(uint16_t i=2;i<16*1024;i++)
 		if(mem_bitmap[i]!=0xFFFFFFFFFFFFFFFF)
 			for(uint8_t j=0;j<64;j++)
@@ -48,6 +48,6 @@ uint32_t get_free_block(void){
 	return -1;
 }
 
-void free_block(uint32_t address){
+void pmm_free_block(uint32_t address){
 	mem_bitmap[address/(4096*64)] &= ~(1 << ((address/4096) % 64));
 }
