@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "idt.h"
 
+struct IDT_entry IDT[256];
+
 void idt_init(void){
 	uint32_t idt_address;
 	uint32_t idt_ptr[2];

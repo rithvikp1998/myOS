@@ -13,6 +13,8 @@ uint8_t keyboard_map[128] =
 
 };
 
+uint32_t keyboard_address;
+
 void fill_kb_idt_entry(void){
 	keyboard_address = (uint32_t) keyboard_handler;
 	IDT[0X21].lower_offset = keyboard_address & 0xffff;

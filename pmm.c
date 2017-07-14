@@ -4,6 +4,9 @@
 #include "mylibc.h"
 #include "tty.h"
 
+multiboot_info_t* mbinfo_addr;
+uint32_t mem_bitmap[1024*32];
+
 /*  Get the pointer to the first instance, grab whatever address and 
 	length information you want, and finally skip to the next memory 
 	map instance by adding size+sizeof(mmap->size) to the pointer */
