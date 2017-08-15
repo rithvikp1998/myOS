@@ -30,7 +30,7 @@ enum pde_flags{
 	PDE_PT_ADDR 	= 0x7FFFF000
 };
 
-uint32_t* pdir;
+extern uint32_t* pdir;
 
 void vmm_alloc_page(uint32_t* e);
 void vmm_free_page(uint32_t* e);

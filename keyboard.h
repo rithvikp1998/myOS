@@ -12,7 +12,7 @@ extern void keyboard_handler(void);
 extern void terminal_putchar(char c);
 extern void terminal_backspace(void);
 
-uint32_t keyboard_address;
+extern uint32_t keyboard_address;
 
 void fill_kb_idt_entry(void);
 void keyboard_init(void);

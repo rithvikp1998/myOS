@@ -31,8 +31,8 @@ struct gdt_ptr_struct{
    One for Code segment,
    One for Data segment */
 
-struct gdt_entry gdt[3];
-struct gdt_ptr_struct gdt_ptr;
+extern struct gdt_entry gdt[3];
+extern struct gdt_ptr_struct gdt_ptr;
 
 void gdt_set_entry(uint8_t index, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran);
 void load_gdt(void);
