@@ -23,6 +23,13 @@ typedef struct _pci_device_descriptor {
 
 } pci_device_descriptor;
 
+typedef struct _BAR {
+	bool prefetchable;
+	uint32_t address;
+	uint32_t size;
+	bool type; /* 0 for Memory mapping, 1 for Input-Output */
+} BAR;
+
 static inline void asm_write_port(uint16_t port, uint32_t value)
 {
 	asm volatile("outl %0, %1" : : "a"(value), "Nd"(port));
@@ -42,6 +49,7 @@ void pciWritePort(uint32_t bus, uint8_t device, uint8_t function,
 bool device_has_functions(uint8_t bus, uint8_t device);
 pci_device_descriptor get_device_descriptor(uint8_t bus, uint8_t device, 
 											uint8_t function);
+BAR get_BAR(uint8_t bus, uint8_t device, uint8_t function, uint8_t bar_number);
 void scan_all_pci_buses(void);
 
 #endif // PCI_H

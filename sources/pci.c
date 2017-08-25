@@ -18,8 +18,8 @@ uint32_t pci_read_port(uint32_t bus, uint8_t device, uint8_t function,
 	return result >> (8 * (offset % 4));
 }
 
-void pciWritePort(uint32_t bus, uint8_t device, uint8_t function, 
-				  uint8_t offset, uint32_t value)
+void pci_write_port(uint32_t bus, uint8_t device, uint8_t function, 
+				  uint8_t offset, uint64_t value)
 {
 	uint32_t id = 	(1 << 31)
 					| (bus << 16)
@@ -58,6 +58,73 @@ pci_device_descriptor get_device_descriptor(uint8_t bus, uint8_t device,
 	return dev;
 }
 
+BAR get_BAR(uint8_t bus, uint8_t device, uint8_t function, uint8_t bar_number)
+{
+	BAR result;
+	uint32_t bar_value = pci_read_port(bus, device, function, 
+									   0x10 + 4 * bar_number); 
+									   // Each bar is 4 units long
+	result.type = bar_value & 0x1; 
+	uint32_t temp;
+	if(result.type == 0) // Memory mapping
+	{
+		switch((bar_value >> 1) & 0x3) {
+			case 0: // 32-bit BAR
+			{
+				pci_write_port(bus, device, function, 0x10 + 4 * bar_number, 
+							   0xFFFFFFFF);
+				temp = pci_read_port(bus, device, function, 0x10 + 4 * bar_number);
+				pci_write_port(bus, device, function, 0x10 + 4 * bar_number, 
+							   bar_value);
+				if(temp!=0) 
+				{
+					terminal_write("Case 0:");
+					printx(temp);
+					terminal_putchar('\n');
+				}
+			}
+			case 1: // 20-bit BAR
+			{
+				pci_write_port(bus, device, function, 0x10 + 4 * bar_number, 
+							   0xFFFFF);
+				temp = pci_read_port(bus, device, function, 0x10 + 4 * bar_number);
+				pci_write_port(bus, device, function, 0x10 + 4 * bar_number, 
+							   bar_value);
+				if(temp!=0) 
+				{
+					terminal_write("Case 1:");
+					printx(temp);
+					terminal_putchar('\n');
+				}
+			}
+			case 2: // 64-bit BAR
+			{
+				pci_write_port(bus, device, function, 0x10 + 4 * bar_number, 
+							   0xFFFFFFFFFFFFFFFF);
+				temp = pci_read_port(bus, device, function, 0x10 + 4 * bar_number);
+				pci_write_port(bus, device, function, 0x10 + 4 * bar_number, 
+							   bar_value);
+				if(temp!=0) 
+				{
+					terminal_write("Case 2:");
+					printx(temp);
+					terminal_putchar('\n');
+				}
+			}
+		}
+	}
+	else // Input-output
+	{
+		result.address = bar_value & ~0x3; // Last two bits are reserved
+		
+		/* Input-Output devices like keyboard, mouse and VGA are not 
+		   prefetchable like memory mapped devices such as disks */
+		result.prefetchable = false;
+	}
+
+	return result;
+}
+
 void scan_all_pci_buses(void)
 {
 	uint16_t bus;
@@ -68,7 +135,19 @@ void scan_all_pci_buses(void)
 			for(function=0; function<num_functions; function++) {
 				pci_device_descriptor dev = get_device_descriptor((bus & 0xFF), device, function);
 				if(dev.vendor_id == 0x0000 || dev.vendor_id == 0xFFFF)
-					break;
+					continue;
+				
+				uint32_t header_type = pci_read_port(bus, device, function, 0x0E) & 0x7F;
+    			int num_BAR = 6 - (4 * header_type);
+				for(uint8_t i=0; i<num_BAR; i++) {
+					BAR bar = get_BAR(bus, device, function, i);
+					if(bar.address && bar.type == 0) // Input-Output
+						dev.port_base = bar.address;
+					else // Memory Mapped
+					{	
+						/* Fill this */
+					}
+				}
 				printx((bus & 0xFF));
 				terminal_putchar(' ');
 				printx(device);
