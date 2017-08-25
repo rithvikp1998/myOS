@@ -10,6 +10,8 @@
 #include "pmm.h"
 #include "mylibc.h"
 
+extern void scan_all_pci_buses();
+
 #if defined(__linux__)
 #error "This is not linux, use a cross-compiler"
 #endif
@@ -25,6 +27,7 @@ void kernel_main(void){
 	load_gdt();
 	idt_init();
 	keyboard_init();
+	scan_all_pci_buses();
 	while(1);
 }
 
