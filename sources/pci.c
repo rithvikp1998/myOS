@@ -68,6 +68,12 @@ BAR get_BAR(uint8_t bus, uint8_t device, uint8_t function, uint8_t bar_number)
 	uint32_t temp;
 	if(result.type == 0) // Memory mapping
 	{
+		/* 
+		 * The port value is read earlier into bar_value. Now, the port is 
+		 * written with all 1s and the value is read again. Doing so gives us
+		 * which bits are writable and which are not. We will write the
+		 * original value (bar_value) back to the port again and resume.
+		 */
 		switch((bar_value >> 1) & 0x3) {
 			case 0: // 32-bit BAR
 			{
@@ -99,17 +105,7 @@ BAR get_BAR(uint8_t bus, uint8_t device, uint8_t function, uint8_t bar_number)
 			}
 			case 2: // 64-bit BAR
 			{
-				pci_write_port(bus, device, function, 0x10 + 4 * bar_number, 
-							   0xFFFFFFFFFFFFFFFF);
-				temp = pci_read_port(bus, device, function, 0x10 + 4 * bar_number);
-				pci_write_port(bus, device, function, 0x10 + 4 * bar_number, 
-							   bar_value);
-				if(temp!=0) 
-				{
-					terminal_write("Case 2:");
-					printx(temp);
-					terminal_putchar('\n');
-				}
+				/* We don't need this case as the OS is 32-bit */
 			}
 		}
 	}
@@ -142,7 +138,9 @@ void scan_all_pci_buses(void)
 				for(uint8_t i=0; i<num_BAR; i++) {
 					BAR bar = get_BAR(bus, device, function, i);
 					if(bar.address && bar.type == 0) // Input-Output
+					{	
 						dev.port_base = bar.address;
+					}
 					else // Memory Mapped
 					{	
 						/* Fill this */
