@@ -1,5 +1,6 @@
 *.o
 *.bin
 *.img
+*.iso
 cross_compiler/*
 isodir/*
