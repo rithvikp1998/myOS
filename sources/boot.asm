@@ -116,9 +116,7 @@ section .text
 
 	;Until paging is set up, the code must be position-independent and use physical addresses, not virtual ones!
 
-	start equ (_start - 0xC0000000)
-
-	_start:									; bootloder loaded us into 32-bit protected mode
+	start:									; bootloder loaded us into 32-bit protected mode
 			call load_page_directory
 			call allow_4m_pages
 			call enable_paging
