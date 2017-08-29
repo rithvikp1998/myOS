@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include "tty.h"
+#include "vga.h"
 #include "mylibc.h"
 
 size_t terminal_row;

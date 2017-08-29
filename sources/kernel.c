@@ -9,8 +9,7 @@
 #include "keyboard.h"
 #include "pmm.h"
 #include "mylibc.h"
-
-extern void scan_all_pci_buses();
+#include "pci.h"
 
 #if defined(__linux__)
 #error "This is not linux, use a cross-compiler"

@@ -1,8 +1,9 @@
 #ifndef VGA_H
 #define VGA_H
 
-/* Hardware color constants */
+#include <stdbool.h>
 
+/* Hardware color constants */
 enum vga_color{
 	VGA_COLOR_BLACK = 0,
 	VGA_COLOR_BLUE = 1,
@@ -22,18 +23,46 @@ enum vga_color{
 	VGA_COLOR_WHITE = 15,
 };
 
-/* inline function suggests compiler to use the whole function definition 
-   everywhere the function is called to save function call overhead time */
+enum vga_ports {
+	ATTR_CONTROLLER_INDEX_PORT 		= 0x3C0,
+	ATTR_CONTROLLER_WRITE_PORT 		= 0x3C0,
+	ATTR_CONTROLLER_READ_PORT 		= 0x3C1,
+	MISC_WRITE_PORT					= 0x3C2,
+	SEQUENCER_INDEX_PORT 			= 0x3C4,
+	SEQUENCER_DATA_PORT 			= 0x3C5,
+	MISC_READ_PORT					= 0x3CC,
+	GRAPHICS_CONTROLLER_INDEX_PORT 	= 0x3CE,
+	GRAPHICS_CONTROLLER_DATA_PORT 	= 0x3CF,
+	CRTC_INDEX_PORT 				= 0x3D4,
+	CRTC_DATA_PORT 					= 0x3D5,
+	ATTR_CONTROLLER_RESET_PORT 		= 0x3DA
+};
 
-/* uint8_t stands for unsigned 8-bit integer(typedef for unsigned char), 
-   uint16_t for unsigned 16-bit integer */
+extern uint8_t g_320x200x256[];
 
 static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg){
-	return fg | bg << 4;	//bitwise or'd and shifted left by 4 bits
+	return fg | bg << 4;
 }
 
 static inline uint16_t vga_entry(unsigned char uc, uint8_t color){
-	return (uint16_t) uc | (uint16_t) color << 8;	//bitwise or'd and shifted left by 4 bits
+	return (uint16_t) uc | (uint16_t) color << 8;
 }
 
+static inline void asm_write_port(uint16_t port, uint32_t value)
+{
+	asm volatile("outl %0, %1" : : "a"(value), "Nd"(port));
+}
+
+static inline uint32_t asm_read_port(uint16_t port)
+{
+    uint32_t result;
+    asm volatile("inl %1, %0" : "=a"(result) : "Nd"(port));
+    return result;
+}
+
+uint8_t* vga_get_frame_buffer();
+void vga_fill_pixel(uint16_t x, uint16_t y, uint8_t color_index);
+bool vga_set_mode(uint16_t width, uint16_t height, uint16_t color_depth);
+void vga_fill_screen(uint16_t width, uint16_t height, uint16_t color_depth, 
+					 uint8_t color_index);
 #endif
