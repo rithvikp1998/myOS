@@ -33,11 +33,7 @@ bool vga_set_mode(uint16_t width, uint16_t height, uint16_t color_depth)
 	uint8_t* values = g_320x200x256;
 
 	/* Misc */
-	for(i=0; i<4; i++)
-	{
-		asm_write_port(MISC_WRITE_PORT, i);
-		asm_write_port(MISC_READ_PORT, *(values++));
-	}
+	asm_write_port(MISC_PORT, (*(values++)));
 
 	/* Seq */
 	for(i=0; i<5; i++)
